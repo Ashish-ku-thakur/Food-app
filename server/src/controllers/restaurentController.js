@@ -19,27 +19,22 @@ export let createRestaurent = async (req, res) => {
 
     validateDataForCreateRestaurent(req);
 
-    
     // Validate photo
     let restaurentphotouri = req.file;
     if (!restaurentphotouri) {
       return res.status(400).json({ msg: "Restaurant photo is required." });
     }
 
-
     // Check if the restaurant already exists
     let existingRestaurent = await Restaurent.findOne({
       restaurentname: restaurentname,
     });
-
 
     if (existingRestaurent) {
       console.log("error in if existnamne");
 
       throw new Error("existingRestaurent");
     }
-
-    
 
     let cuisiens = restaurentcuisiens.split(",");
 
@@ -113,9 +108,83 @@ export let getTheRestaurentById = async (req, res) => {
 
 export let getRestaurentViaQuery = async (req, res) => {
   try {
-    let name = req.body.name;
+    let name = req.params.searctText; // restaurentname, country
+
+    console.log(name);
+
+    if (!name) {
+      return res.status(404).json({
+        msg: `${name} that you have given is not match any restaurent;s name`,
+      });
+    }
+
+    // set the advanse qurey to find restauren via name and country
+    let findrestaurent = await Restaurent.find({
+      $or: [
+        { restaurentname: { $regex: `^${name}`, $options: "i" } },
+        { restaurentcountry: { $regex: `^${name}`, $options: "i" } },
+      ],
+    });
+
+    if (!findrestaurent) {
+      return res.status(404).json({ msg: "RESTAURENT  not found" });
+    }
+    return res.status(200).json({ findrestaurent });
   } catch (error) {
     console.log(error);
     return res.status(501).json({ error });
   }
 };
+
+// now we will find restaurent viw cuisiens or city name
+export let getRestaurentViaCuisine = async (req, res) => {
+  try {
+    const { selectCuisiens, findText } = req.query;
+
+    // Check if both required parameters are missing
+    if (!selectCuisiens && !findText) {
+      return res
+        .status(404)
+        .json({ msg: "selectCuisiens or findText is not found" });
+    }
+
+    let makeQuery = [];
+
+    // Handle cuisines condition
+    if (selectCuisiens) {
+      const splitAllTheCuisiens = selectCuisiens.split(",");
+      const cuisineRegexQueries = splitAllTheCuisiens.map((cuisine) => ({
+        restaurentcuisiens: { $regex: `^${cuisine}`, $options: "i" },
+      }));
+      makeQuery.push(...cuisineRegexQueries);
+
+    }
+
+    // Handle text search condition
+    if (findText) {
+      makeQuery.push(
+        { restaurentname: { $regex: `^${findText}`, $options: "i" } },
+        { restaurentcounter: { $regex: `^${findText}`, $options: "i" } },
+        { restaurentcity: { $regex: `^${findText}`, $options: "i" } }
+      );
+    }
+
+    // Combine conditions with $or if needed
+    let query = {};
+    
+    if (makeQuery.length > 0) {
+      query = { $or: makeQuery };
+    }
+
+    // Fetch data from MongoDB
+    const findRestaurent = await Restaurent.find(query);
+    
+
+    return res.status(200).json(findRestaurent);
+  } catch (error) {
+    console.error(error);
+    return res.status(501).json({ msg: error.message });
+  }
+};
+
+

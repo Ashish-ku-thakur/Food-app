@@ -7,13 +7,13 @@ let restaurentSchema = new mongoose.Schema({
     unique: true,
     minLength: 3,
     maxLength: 30,
-    trim: true, 
+    trim: true,
   },
 
   restaurentcatagery: {
     type: String,
     enum: ["veg", "non-veg", "omnivorus"],
-    required:true
+    required: true,
   },
 
   restaurentoner: {
@@ -58,6 +58,7 @@ let restaurentSchema = new mongoose.Schema({
   },
 });
 
+restaurentSchema.index({ restaurentname: 1, restaurentcountry: 1 }, { background: true });
 
 let Restaurent = new mongoose.model("Restaurent", restaurentSchema);
 export default Restaurent;
