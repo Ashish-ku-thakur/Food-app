@@ -19,8 +19,6 @@ app.use("/api/v1/user", userRouter);
 app.use("/api/v1/restaurent", restaurentRouter);
 
 
-
-
 dbConnection()
   .then(() => {
     console.log("db connected");
