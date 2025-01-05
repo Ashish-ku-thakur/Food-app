@@ -1,5 +1,5 @@
 import express from "express"
-import { createRestaurent, getRestaurentViaCuisine, getRestaurentViaQuery, getTheRestaurentById } from "../controllers/restaurentController.js"
+import { createRestaurent, deleteTheRestaurent, finduserRestaurent, getRestaurentViaCuisine, getRestaurentViaQuery, getTheRestaurentById, updateTheRestaurentViaId } from "../controllers/restaurentController.js"
 import { authCheck } from "../middlewares/authCheck.js";
 import upload from "../middlewares/multerConfig.js";
 
@@ -9,5 +9,8 @@ router.post("/createRestaurent",authCheck, upload.single("restaurentphotouri"), 
 router.get("/gettherestaurent/:id", authCheck, getTheRestaurentById)
 router.get("/getrestaurentviasearchtext/:searctText", authCheck, getRestaurentViaQuery)
 router.get("/getrestaurentviaquery/:selectCuisiens", authCheck, getRestaurentViaCuisine)
+router.get("/finduserRestaurent", authCheck, finduserRestaurent)
+router.patch("/updatetherestaurent/:id", authCheck, upload.single("restaurentphotouri"), updateTheRestaurentViaId)
+router.delete("/deletetherestaurent/:id", authCheck, deleteTheRestaurent)
 
 export default router;

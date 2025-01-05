@@ -1,6 +1,7 @@
 import cloudinary from "../cloudinary/cloudinaryConfig.js";
 import Restaurent from "../models/restaurent.js";
 import { getthedatauri } from "../utils/getTheDataUri.js";
+import { updateRestaurent } from "../utils/restaurentUpdate.js";
 import { validateDataForCreateRestaurent } from "../utils/restaurentValidateData.js";
 
 export let createRestaurent = async (req, res) => {
@@ -106,6 +107,7 @@ export let getTheRestaurentById = async (req, res) => {
   }
 };
 
+// get the restaurent via restaurentname, restaurentcountry
 export let getRestaurentViaQuery = async (req, res) => {
   try {
     let name = req.params.searctText; // restaurentname, country
@@ -136,7 +138,7 @@ export let getRestaurentViaQuery = async (req, res) => {
   }
 };
 
-// now we will find restaurent viw cuisiens or city name
+// now we will find restaurent viw cuisiens or city name, country name
 export let getRestaurentViaCuisine = async (req, res) => {
   try {
     const { selectCuisiens, findText } = req.query;
@@ -157,7 +159,6 @@ export let getRestaurentViaCuisine = async (req, res) => {
         restaurentcuisiens: { $regex: `^${cuisine}`, $options: "i" },
       }));
       makeQuery.push(...cuisineRegexQueries);
-
     }
 
     // Handle text search condition
@@ -171,14 +172,13 @@ export let getRestaurentViaCuisine = async (req, res) => {
 
     // Combine conditions with $or if needed
     let query = {};
-    
+
     if (makeQuery.length > 0) {
       query = { $or: makeQuery };
     }
 
     // Fetch data from MongoDB
     const findRestaurent = await Restaurent.find(query);
-    
 
     return res.status(200).json(findRestaurent);
   } catch (error) {
@@ -187,4 +187,109 @@ export let getRestaurentViaCuisine = async (req, res) => {
   }
 };
 
+// find all the user's restaurents
+export let finduserRestaurent = async (req, res) => {
+  try {
+    let userId = req._id;
+    let findTheRestaurents = await Restaurent.find({ restaurentoner: userId });
 
+    if (!findTheRestaurents) {
+      return res.status(404).json({ msg: "restaurent not found" });
+    }
+
+    return res.status(200).json(findTheRestaurents);
+  } catch (error) {
+    console.log(error);
+    return res.status(501).json({ msg: error });
+  }
+};
+
+// update the restaurent via id
+export let updateTheRestaurentViaId = async (req, res) => {
+  try {
+    let restaurentId = req.params.id;
+
+    // validate the req.body data
+    // updateRestaurent(req, res);
+    console.log("first");
+
+    let restaurentphotouri = req.file;
+
+    let updateRestaurentPhoto;
+    if (restaurentphotouri) {
+      // get the data uri
+
+      console.log("second");
+
+      let datauri = getthedatauri(restaurentphotouri);
+
+      if (!datauri) {
+        return res.status(404).json({ msg: "data uri is not genrated" });
+      }
+      console.log("third");
+
+      // set the datauri to cloudinary
+      let cloudResponse = await cloudinary.uploader.upload(datauri, {
+        folder: "restaurent_images",
+      });
+
+      if (!cloudResponse?.secure_url) {
+        return res.status(404).json({ msg: "secure_url is not genrated" });
+      }
+
+      // set the secure url to the updateRestaurentPhoto
+      updateRestaurentPhoto = cloudResponse.secure_url;
+    }
+
+    if (!restaurentId) {
+      return res.status(404).json({
+        msg: "please enter restaurent id or select a restaurent from the list",
+      });
+    }
+
+    // find the restaurent via id and update
+    let findTheRestaurent = await Restaurent.findByIdAndUpdate(
+      { _id: restaurentId },
+      {
+        ...req.body, // Spread `req.body` for updating fields
+        restaurentphotouri: updateRestaurentPhoto, // Add/update the photo URI
+      },
+      { restaurentphotouri: updateRestaurentPhoto },
+      { new: true }
+    );
+    await findTheRestaurent.save();
+
+    console.log("forth");
+
+    return res.status(200).json(findTheRestaurent);
+  } catch (error) {
+    console.log(error);
+    return res.status(501).json({ msg: error });
+  }
+};
+
+// delete the restaurent
+export let deleteTheRestaurent = async (req, res) => {
+  try {
+    // find the restaurent id
+    let restaurentId = req.params.id;
+
+    if (!restaurentId) {
+      return res.status(404).json({ msg: "rstaurent id is not persent" });
+    }
+
+    // find the restaurent via id and delete
+    let findTheRestaurent = await Restaurent.findByIdAndDelete({
+      _id: restaurentId,
+    });
+
+    return res
+      .status(200)
+      .json({
+        msg: `${findTheRestaurent?.restaurentname} is deleted successfully`,
+      });
+  } catch (error) {
+    console.log(error);
+    return res.status(501).json({ msg: error });
+  }
+};
