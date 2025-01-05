@@ -5,8 +5,9 @@ let menuSchema = new mongoose.Schema({
     // menu ki name
     type: String,
     required: true,
+    unique:true
   },
-  menuPhotoURI: {
+  menuphoto: {
     // menu ki photo
     type: String,
     required: true,
@@ -21,6 +22,8 @@ let menuSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+
+
 });
 
 let Menu = mongoose.model("Menu", menuSchema);

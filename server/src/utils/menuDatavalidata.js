@@ -1,6 +1,6 @@
 export let menuDataValidata = (req, res) => {
   try {
-    let menuData = ["menuName", "menuPhotoURI", "menuPrice", "menuDescription"];
+    let menuData = ["menuName", "menuPrice", "menuDescription"];
 
     let isvalid = Object.keys(req.body).every((ele) => menuData.includes(ele));
 
