@@ -6,6 +6,7 @@ import cookieParser from "cookie-parser";
 import userRouter from "./routes/userRouter.js";
 import restaurentRouter from "./routes/restaurentRouter.js";
 import menuRouter from "./routes/menuRouter.js";
+import orderRouter from "./routes/orderRouter.js";
 
 dotenv.config();
 
@@ -18,6 +19,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/restaurent", restaurentRouter);
 app.use("/api/v1/menu", menuRouter);
+app.use("/api/v1/order", orderRouter);
 
 
 dbConnection()
