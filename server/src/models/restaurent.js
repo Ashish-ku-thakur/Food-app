@@ -58,7 +58,11 @@ let restaurentSchema = new mongoose.Schema({
   },
 });
 
-restaurentSchema.index({ restaurentname: 1, restaurentcountry: 1 }, { background: true });
+restaurentSchema.index(
+  { restaurentname: 1, restaurentcountry: 1 },
+  { background: true }
+);
 
-let Restaurent = new mongoose.model("Restaurent", restaurentSchema);
+let Restaurent = mongoose.model("Restaurent", restaurentSchema);
 export default Restaurent;
+
